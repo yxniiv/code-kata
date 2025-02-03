@@ -1,0 +1,49 @@
+Hello Karthik, I've uploaded the code below. Thanks for the assessment, it was fun. 
+##########################################################################################
+################################ PROBLEM ONE #############################################
+import csv
+
+def fixed_width_parser(file_path, spec, output_csv):
+    with open( file_path, 'r') as fixedWithFile, open(output_csv, 'w', newline = '') as newFile:
+        writer = csv.writer(newFile)
+
+        for line in fixedWithFile:
+            start = 0
+            row = []
+            for width in spec:
+                row.append ( line[start:start + width].strip())
+                start += width
+            writer.writerow(row)
+
+
+specification = [5, 12, 3, 2, 13, 7, 10, 13, 20, 13]
+fixed_width_parser("fixed_width.txt", specification, "output_file.txt")
+
+
+##########################################################################################
+################################ PROBLEM TWO #############################################
+
+import pandas as pd
+import hashlib
+
+def hash_value(value):
+    return hashlib.sha256(value.encode()).hexdigest() #converts string into hash for anonymization
+
+def anonymize_csv(inputFile, outputFile, chunkSize=100000):
+    codedColumns = ['First Name', 'Last Name', 'Address'] #columns that are to be anonymize
+    chunkFile = pd.read_csv(inputFile, chunksize= chunkSize) #reads in chunks to handle large files
+
+    for i, chunk in enumerate(chunkFile):
+
+        #Applies the hash functions to sensitive columns
+        for columns in codedColumns:
+            if columns in chunk.columns:
+                chunk[columns] = chunk[columns].astype(str).apply(hash_value)
+
+        chunk.to_csv(outputFile, mode='a', index = False, header =(i==0)) #Appends anonymized chunk to output files
+
+        print(f'Anonymized data saved to {outputFile}')
+
+input_csv = 'sample_data.csv'
+output_csv = 'coded_file.csv'
+anonymize_csv(input_csv, output_csv)
